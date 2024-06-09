@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Playma</title>
+    </head>
+    <body style="background:#303030;color:#f0f0f0;">
+        <style>
+            .button-85 {
+              padding: 0.6em 2em;
+              border: none;
+              outline: none;
+              color: rgb(255, 255, 255);
+              background: #111;
+              cursor: pointer;
+              position: relative;
+              z-index: 0;
+              border-radius: 10px;
+              user-select: none;
+              -webkit-user-select: none;
+              touch-action: manipulation;
+            }
+            #audio-player {
+                position: sticky;
+                top: 0;
+                z-index:10000;
+                width: 100%;
+            }
+            #mainframe {
+                display: flex;
+            }
+            #leftbar {
+                flex: 0 0 15%; /* Left column takes up 15% width */
+                padding: 10px;
+                border: 3px solid #fafafa;
+            }
+
+            #rightbar {
+                flex: 1; /* Right column takes up remaining space */
+                padding: 10px;
+            }
+            #play-icon {
+                width: 48px;
+                height: 48px;
+            }
+            #mute-icon {
+                width: 48px;
+                height: 48px;
+            }
+            #audio-player {
+                background-color: #000000
+            }
+        </style>
+        <script>
+            function sendPostRequest(songName, songTitle, songAuthor) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/music/", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.responseType = 'blob'
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            var response = xhr.response;
+                            var blob = xhr.response;
+                            var audio = document.getElementById("audioPlayer");
+                            console.log(audio)
+                            document.getElementById("plays_now_text").textContent=songTitle + " - " + songAuthor;
+                            audio.src = URL.createObjectURL(blob);
+                            //audio.play();
+                            playPause()
+                        } else {
+                            console.error("Error: " + xhr.status);
+                        }
+                    }
+                };
+                xhr.send("song=" + songName);
+            }
+            function playPause(){
+                var audio = document.getElementById("audioPlayer");
+                var playbtn = document.getElementById("play-icon");
+                audio.addEventListener("timeupdate", () => {
+                  progressUpdate()
+                  setTimes()
+                })
+
+                if(audio.paused){
+                    playbtn.src="/images/pause.png"
+                    audio.play();
+                } else {
+                    playbtn.src="/images/play.png"
+                    audio.pause();
+                }
+            }
+            function mute(){
+                var audio = document.getElementById("audioPlayer");
+                var mutebtn = document.getElementById("mute-icon");
+                if(audio.muted){
+                    mutebtn.src="/images/volume.png"
+                    audio.muted = false;
+                } else {
+                    mutebtn.src="/images/muted.png"
+                    audio.muted = true;
+                }
+            }
+        </script>
+        <div id="audio-player">
+            <p>Audio Player</p>
+            <!-- swaps with pause icon -->
+            <input type="image" id="play-icon" src="/images/play.png" onclick="playPause()">
+            <span id="current-time" class="time">0:00</span>
+            <input type="range" id="seek-slider" max="100" value="0">
+            <span id="duration" class="time">0:00</span>
+            <input type="image" id="mute-icon" src="/images/volume.png" onclick="mute()">
+            <input type="range" id="volume-slider" max="100" value="100"></br>
+            Now playing: <a id="plays_now_text">None</a>
+            </br>
+        </div>
+        <!-- <div id="audio-player"> -->
+        <audio id="audioPlayer" controls>
+            <source id="audioSource" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio></br>
+        <!-- </div> -->
+        <div id="mainframe">
+            <div id="leftbar", align="left">
+                <h1>Controls</h1>
+            </div>
+            <div id="rightbar">
+                {{range .Songs}}
+                <button class="button-85" onclick="sendPostRequest('{{.Path}}', '{{.Artist}}', '{{.Title}}')">{{.Artist}} - {{.Title}}</button></br></br>
+                {{end}}
+            </div>
+       </div>
+    </body>
+</html>
+

@@ -1,0 +1,2 @@
+music_dir="/home/user/OldMusic/dipsomania:/home/user/OldMusic/neco-covers"
+playlist_dir="None"
